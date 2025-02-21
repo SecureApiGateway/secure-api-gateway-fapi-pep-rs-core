@@ -1,0 +1,31 @@
+{
+  "name": "99 - Identity Platform pass-through",
+  "comment": "Pass-through for any unprotected Identity Platform endpoints (such as the XUI) - the name of this route needs to be last alphabetically so that more specific routes can be used if they exist.",
+  "baseURI": "https://&{identity.platform.fqdn}",
+  "handler": {
+    "type": "Chain",
+    "config": {
+      "filters": [
+        "SBATFapiInteractionFilterChain",
+        {
+          "comment": "Add host header to downstream request",
+          "name": "HeaderFilter-ChangeHostToIAM",
+          "type": "HeaderFilter",
+          "config": {
+            "messageType": "REQUEST",
+            "remove": [
+              "host",
+              "X-Forwarded-Host"
+            ],
+            "add": {
+              "X-Forwarded-Host": [
+                "&{ig.as.fqdn}"
+              ]
+            }
+          }
+        }
+      ],
+      "handler": "FRReverseProxyHandlerNoCapture"
+    }
+  }
+}
