@@ -1,0 +1,413 @@
+{
+  "properties": {
+    "security": {
+      "enableTestTrustedDirectory": {"$bool": "&{ig.test.directory.enabled|true}"}
+    },
+    "oauth2": {
+      "tokenEndpointAuthMethodsSupported": {
+        "$list": "&{ig.oauth2.token.endpoint.auth.methods|private_key_jwt,tls_client_auth}"
+      }
+    },
+    "urls": {
+      "idmBaseUri": "https://&{identity.platform.fqdn}/openidm"
+    },
+    "vertxConfig": {
+      "maxHeaderSize": 16384,
+      "initialSettings": {
+        "maxHeaderListSize": 16384
+      }
+    }
+  },
+  "handler": {
+    "type": "DispatchHandler",
+    "config": {
+      "bindings": [
+        {
+          "condition": "${request.uri.host == env['MY_POD_IP']}",
+          "handler": {
+            "name": "router-pod",
+            "type": "Router",
+            "config": {
+              "scanInterval": "disabled",
+              "directory": "${openig.configDirectory}/routes/routes-pod"
+            }
+          }
+        },
+        {
+          "condition": "${request.uri.host != env['MY_POD_IP']}",
+          "handler": {
+            "name": "router-service",
+            "type": "Router",
+            "config": {
+              "scanInterval": "disabled",
+              "directory": "${openig.configDirectory}/routes/routes-service"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "heap": [
+    {
+      "name": "capture",
+      "type": "CaptureDecorator",
+      "config": {
+        "captureEntity": true
+      }
+    },
+    {
+      "name": "ReverseProxyHandler",
+      "type": "ReverseProxyHandler",
+      "capture": [
+        "request",
+        "response"
+      ],
+      "config": {
+        "vertx": "${vertxConfig}"
+      }
+    },
+    {
+      "name": "ReverseProxyHandlerNoCapture",
+      "type": "ReverseProxyHandler",
+      "comment": "ReverseProxyHandler with no capture decorator configuration",
+      "config": {
+        "vertx": "${vertxConfig}"
+      }
+    },
+    {
+      "name": "JwtSession",
+      "type": "JwtSession"
+    },
+    {
+      "name" : "ForgeRockClientHandler",
+      "type" : "Chain",
+      "config" : {
+        "filters" : [ 
+          "TransactionIdOutboundFilter"
+       ],
+        "handler" : "ClientHandler"
+      },
+      "capture" : [ "response", "request" ]
+    },
+    {
+      "name": "ValidateApiClientMtlsCertChain",
+      "type": "ChainOfFilters",
+      "comment": "This filter chain validates the ApiClient's MTLS cert using the Trusted Directory, it first fetches all of the resources it needs to perform the validation",
+      "config" : {
+        "filters": [
+          {
+            "comment": "Add ApiClient data to the context attributes.apiClient",
+            "name": "FetchApiClientFilter",
+            "type": "FetchApiClientFilter",
+            "config": {
+              "apiClientService": "IdmApiClientService"
+            }
+          },
+          {
+            "comment": "Validate the MTLS transport cert",
+            "name": "TransportCertValidationFilter",
+            "type": "TransportCertValidationFilter",
+            "config": {
+              "certificateRetriever": "HeaderCertificateRetriever",
+              "transportCertValidator": "TransportCertValidator"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SBATFapiInteractionFilterChain",
+      "type": "ChainOfFilters",
+      "comment": "This filter chain will set the x-fapi-interaction-id (if not provided in the request), and also set the transaction context to the x-fapi-interaction-id value. This means that if the 'TransactionIdOutboundFilter' is specified on any handlers used by the chain the x-fapi-interaction-id value will be passed onward in the X-ForgeRock-TransactionId header",
+      "config" : {
+        "filters": [
+          {
+            "comment": "Add x-fapi-interaction-id header if one was not present in the request",
+            "name": "FapiInteractionIdFilter",
+            "type": "FapiInteractionIdFilter"
+          },
+          {
+            "name": "FapiInteractionIdTracingFilter",
+            "type": "FapiInteractionIdTracingFilter",
+            "comment": "Copy the x-fapi-interaction-id header to TransactionIdContext"
+          },
+          {
+            "comment": "Log any unhandled exceptions, installed after the FapiTransactionIdFilter so that the txId being logged is set to the x-fapi-interaction-id",
+            "name": "SapiLogAttachedExceptionFilter",
+            "type": "SapiLogAttachedExceptionFilter"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FRReverseProxyHandlerNoCapture",
+      "comment": "ReverseProxyHandler for calls to the FR services, with the capture decorator disabled",
+      "type": "Chain",
+      "config": {
+        "filters" : [
+          "TransactionIdOutboundFilter"
+        ],
+        "handler" : "ReverseProxyHandlerNoCapture"
+      }
+    },
+    {
+      "name": "FRReverseProxyHandler",
+      "comment": "ReverseProxyHandler for calls to the FR services",
+      "type": "Chain",
+      "config": {
+        "filters": [
+          "TransactionIdOutboundFilter"
+        ],
+        "handler": "ReverseProxyHandler"
+      }
+    },
+    {
+      "name" : "AmService",
+      "type" : "AmService",
+      "config" : {
+        "url" : "https://&{identity.platform.fqdn}/am",
+        "realm" : "/&{am.realm}",
+        "agent" : {
+          "username" : "ig-agent",
+          "passwordSecretId" : "ig.agent.password"
+        },
+        "secretsProvider": "SystemAndEnvSecretStore-IAM",
+        "sessionCache" : {
+          "enabled" : false
+        },
+        "notifications" : {
+          "enabled" : false
+        }
+      }
+    },
+    {
+      "name": "SystemAndEnvSecretStore-IAM",
+      "type": "SystemAndEnvSecretStore",
+      "config": {
+        "format": "PLAIN"
+      }
+    },
+    {
+      "name": "SecretsProvider-AmJWK",
+      "type": "SecretsProvider",
+      "config": {
+        "stores": [
+          {
+            "type": "JwkSetSecretStore",
+            "config": {
+              "jwkUrl": "https://&{identity.platform.fqdn}/am/oauth2/realms/root/realms/&{am.realm}/connect/jwk_uri"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "IDMClientHandler",
+      "type": "Chain",
+      "config": {
+        "filters": [
+          {
+            "type": "ResourceOwnerOAuth2ClientFilter",
+            "config": {
+              "tokenEndpoint": "https://&{identity.platform.fqdn}/am/oauth2/realms/root/realms/&{am.realm}/access_token",
+              "username": "&{ig.idm.user}",
+              "passwordSecretId": "ig.idm.password",
+              "secretsProvider": "SystemAndEnvSecretStore-IAM",
+              "scopes": [
+                "fr:idm:*"
+              ],
+              "endpointHandler": {
+                "type": "Chain",
+                "config": {
+                  "handler": "ForgeRockClientHandler",
+                  "filters": [
+                    {
+                      "type": "ClientSecretBasicAuthenticationFilter",
+                      "config": {
+                        "clientId": "&{ig.client.id}",
+                        "clientSecretId": "ig.client.secret",
+                        "secretsProvider": "SystemAndEnvSecretStore-IAM"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "handler": "ForgeRockClientHandler"
+      }
+    },
+    {
+      "name": "SecretKeyPropertyFormat-Gateway",
+      "type": "SecretKeyPropertyFormat",
+      "config": {
+        "format": "PLAIN",
+        "algorithm": "AES"
+      }
+    },
+    {
+      "name": "SystemAndEnvSecretStore-Gateway",
+      "type": "SystemAndEnvSecretStore",
+      "config": {
+        "mappings": [{
+          "secretId": "ig.gw.secret",
+          "format": "SecretKeyPropertyFormat-Gateway"
+        }]
+      }
+    },
+    {
+      "name": "TrustManager-OB",
+      "type": "TrustManager",
+      "config": {
+        "keystore": {
+          "type": "KeyStore",
+          "config": {
+            "url": "file://&{ig.instance.dir}&{ig.truststore.path}",
+            "type": "PKCS12",
+            "passwordSecretId": "ig.truststore.password",
+            "secretsProvider": "SystemAndEnvSecretStore-IAM"
+          }
+        }
+      }
+    },
+    {
+      "name": "OBClientHandler",
+      "type": "ClientHandler",
+      "capture": "all",
+      "config": {
+        "tls": {
+          "type": "ClientTlsOptions",
+          "config": {
+            "trustManager": "TrustManager-OB"
+          }
+        }
+      }
+    },
+    {
+      "name": "JwkSetService",
+      "type": "CaffeineCachingJwkSetService",
+      "config": {
+        "handler": "OBClientHandler",
+        "maxCacheEntries": 500,
+        "expireAfterWriteDuration": "24 hours"
+      }
+    },
+    {
+      "name": "TrustedDirectoryService",
+      "type": "TrustedDirectoryService",
+      "config": {
+        "trustedDirectories": [
+          "OpenBankingTestDirectory",
+          "SecureAPIGatewayTestDirectory"
+        ]
+      }
+    },
+    {
+      "name": "OpenBankingTestDirectory",
+      "type": "TrustedDirectory",
+      "config": {
+        "issuer": "OpenBanking Ltd",
+        "softwareStatementClaims": {
+          "organisationIdClaimName": "org_id",
+          "organisationNameClaimName": "org_name",
+          "softwareIdClaimName": "software_id",
+          "clientNameClaimName": "software_client_name",
+          "redirectUrisClaimName": "software_redirect_uris",
+          "rolesClaimName": "software_roles",
+          "jwksUriClaimName": "software_jwks_endpoint"
+        },
+        "secretsProvider": {
+          "type": "SecretsProvider",
+          "config": {
+            "stores": [
+              {
+                "type": "JwkSetSecretStore",
+                "config": {
+                  "jwkUrl": "https://keystore.openbankingtest.org.uk/keystore/openbanking.jwks",
+                  "handler": "OBClientHandler"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "SecureAPIGatewayTestDirectory",
+      "type": "TrustedDirectory",
+      "config": {
+        "issuer": "test-publisher",
+        "softwareStatementClaims": {
+          "organisationIdClaimName": "org_id",
+          "organisationNameClaimName": "org_name",
+          "softwareIdClaimName": "software_id",
+          "clientNameClaimName": "software_client_name",
+          "redirectUrisClaimName": "software_redirect_uris",
+          "rolesClaimName": "software_roles",
+          "jwksUriClaimName": "software_jwks_endpoint"
+        },
+        "secretsProvider": {
+          "type": "SecretsProvider",
+          "config": {
+            "stores": [
+              {
+                "type": "JwkSetSecretStore",
+                "config": {
+                  "jwkUrl": "https://&{trusteddir.fqdn}/jwkms/testdirectory/jwks",
+                  "handler": "OBClientHandler"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "RsaJwtSignatureValidator",
+      "type": "RsaJwtSignatureValidator"
+    },
+    {
+      "name": "TransportCertValidator",
+      "type": "DefaultTransportCertValidator",
+      "config": {
+        "validKeyUse": "tls"
+      }
+    },
+    {
+      "name": "HeaderCertificateRetriever",
+      "type": "HeaderCertificateRetriever",
+      "config": {
+        "certificateHeaderName": "ssl-client-cert"
+      }
+    },
+    {
+      "name": "ContextCertificateRetriever",
+      "type": "ContextCertificateRetriever"
+    },
+    {
+      "name": "IdmService",
+      "type": "IdmService",
+      "config": {
+        "baseEndpoint": "&{urls.idmBaseUri}",
+        "endpointHandler": "IDMClientHandler"
+      }
+    },
+    {
+      "name": "IdmApiClientService",
+      "type": "IdmApiClientService",
+      "config": {
+        "idmService": "IdmService",
+        "jwkSetService": "JwkSetService"
+      }
+    },
+    {
+      "name": "IdmApiClientOrganisationService",
+      "type": "IdmApiClientOrganisationService",
+      "config": {
+        "idmService": "IdmService"
+      }
+    }
+  ],
+  "monitor": true
+}
