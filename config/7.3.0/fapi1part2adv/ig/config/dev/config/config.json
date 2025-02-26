@@ -261,6 +261,20 @@
       }
     },
     {
+      "name": "TransportCertValidator",
+      "type": "DefaultTransportCertValidator",
+      "config": {
+        "validKeyUse": "tls"
+      }
+    },
+    {
+      "name": "HeaderCertificateRetriever",
+      "type": "HeaderCertificateRetriever",
+      "config": {
+        "certificateHeaderName": "ssl-client-cert"
+      }
+    },
+    {
       "name": "IdmService",
       "type": "IdmService",
       "config": {
