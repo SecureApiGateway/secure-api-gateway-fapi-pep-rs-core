@@ -175,6 +175,22 @@
           }
         ]
       }
+    },
+    {
+      "name": "IdmService",
+      "type": "IdmService",
+      "config": {
+        "baseEndpoint": "&{urls.idmBaseUri}",
+        "endpointHandler": "IDMClientHandler"
+      }
+    },
+    {
+      "name": "IdmApiClientService",
+      "type": "IdmApiClientService",
+      "config": {
+        "idmService": "IdmService",
+        "jwkSetService": "JwkSetService"
+      }
     }
   ],
   "monitor": true
