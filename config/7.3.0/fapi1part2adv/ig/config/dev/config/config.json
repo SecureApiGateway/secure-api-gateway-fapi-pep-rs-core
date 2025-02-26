@@ -94,6 +94,43 @@
       "capture" : [ "response", "request" ]
     },
     {
+      "name": "IDMClientHandler",
+      "type": "Chain",
+      "config": {
+        "filters": [
+          {
+            "type": "ResourceOwnerOAuth2ClientFilter",
+            "config": {
+              "tokenEndpoint": "https://&{identity.platform.fqdn}/am/oauth2/realms/root/realms/&{am.realm}/access_token",
+              "username": "&{ig.idm.user}",
+              "passwordSecretId": "ig.idm.password",
+              "secretsProvider": "SystemAndEnvSecretStore-IAM",
+              "scopes": [
+                "fr:idm:*"
+              ],
+              "endpointHandler": {
+                "type": "Chain",
+                "config": {
+                  "handler": "ForgeRockClientHandler",
+                  "filters": [
+                    {
+                      "type": "ClientSecretBasicAuthenticationFilter",
+                      "config": {
+                        "clientId": "&{ig.client.id}",
+                        "clientSecretId": "ig.client.secret",
+                        "secretsProvider": "SystemAndEnvSecretStore-IAM"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "handler": "ForgeRockClientHandler"
+      }
+    },
+    {
       "name": "SBATFapiInteractionFilterChain",
       "type": "ChainOfFilters",
       "comment": "This filter chain will set the x-fapi-interaction-id (if not provided in the request), and also set the transaction context to the x-fapi-interaction-id value. This means that if the 'TransactionIdOutboundFilter' is specified on any handlers used by the chain the x-fapi-interaction-id value will be passed onward in the X-ForgeRock-TransactionId header",
