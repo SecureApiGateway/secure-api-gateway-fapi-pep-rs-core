@@ -40,9 +40,9 @@ spec:
                   fieldPath: status.podIP
           envFrom:
             - secretRef:
-                name: as-sapig-secrets
+                name: rs-sapig-secrets
             - configMapRef:
-                name: as-sapig-deployment-config
+                name: rs-sapig-deployment-config
           image: fapi-pep-rs
           imagePullPolicy: Always
           livenessProbe:
