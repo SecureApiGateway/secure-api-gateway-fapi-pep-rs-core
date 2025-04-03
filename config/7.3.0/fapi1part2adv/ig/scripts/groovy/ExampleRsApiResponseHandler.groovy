@@ -1,4 +1,4 @@
-SCRIPT_NAME = "[ExampleRsApiResponseHandler] "
+RSSCRIPT_NAME = "[ExampleRsApiResponseHandler] "
 logger.debug(SCRIPT_NAME + "Creating example API response...")
 
 // Example response - return some data from the access_token
