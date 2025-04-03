@@ -1,13 +1,5 @@
 {
   "properties": {
-    "security": {
-      "enableTestTrustedDirectory": {"$bool": "&{ig.test.directory.enabled|true}"}
-    },
-    "oauth2": {
-      "tokenEndpointAuthMethodsSupported": {
-        "$list": "&{ig.oauth2.token.endpoint.auth.methods|private_key_jwt,tls_client_auth}"
-      }
-    },
     "urls": {
       "idmBaseUri": "https://&{identity.platform.fqdn}/openidm"
     },
@@ -102,115 +94,10 @@
       "capture" : [ "response", "request" ]
     },
     {
-      "name": "ValidateApiClientMtlsCertChain",
-      "type": "ChainOfFilters",
-      "comment": "This filter chain validates the ApiClient's MTLS cert using the Trusted Directory, it first fetches all of the resources it needs to perform the validation",
-      "config" : {
-        "filters": [
-          {
-            "comment": "Add ApiClient data to the context attributes.apiClient",
-            "name": "FetchApiClientFilter",
-            "type": "FetchApiClientFilter",
-            "config": {
-              "apiClientService": "IdmApiClientService"
-            }
-          },
-          {
-            "comment": "Validate the MTLS transport cert",
-            "name": "TransportCertValidationFilter",
-            "type": "TransportCertValidationFilter",
-            "config": {
-              "certificateRetriever": "HeaderCertificateRetriever",
-              "transportCertValidator": "TransportCertValidator"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "SBATFapiInteractionFilterChain",
-      "type": "ChainOfFilters",
-      "comment": "This filter chain will set the x-fapi-interaction-id (if not provided in the request), and also set the transaction context to the x-fapi-interaction-id value. This means that if the 'TransactionIdOutboundFilter' is specified on any handlers used by the chain the x-fapi-interaction-id value will be passed onward in the X-ForgeRock-TransactionId header",
-      "config" : {
-        "filters": [
-          {
-            "comment": "Add x-fapi-interaction-id header if one was not present in the request",
-            "name": "FapiInteractionIdFilter",
-            "type": "FapiInteractionIdFilter"
-          },
-          {
-            "name": "FapiInteractionIdTracingFilter",
-            "type": "FapiInteractionIdTracingFilter",
-            "comment": "Copy the x-fapi-interaction-id header to TransactionIdContext"
-          },
-          {
-            "comment": "Log any unhandled exceptions, installed after the FapiTransactionIdFilter so that the txId being logged is set to the x-fapi-interaction-id",
-            "name": "SapiLogAttachedExceptionFilter",
-            "type": "SapiLogAttachedExceptionFilter"
-          }
-        ]
-      }
-    },
-    {
-      "name": "FRReverseProxyHandlerNoCapture",
-      "comment": "ReverseProxyHandler for calls to the FR services, with the capture decorator disabled",
-      "type": "Chain",
-      "config": {
-        "filters" : [
-          "TransactionIdOutboundFilter"
-        ],
-        "handler" : "ReverseProxyHandlerNoCapture"
-      }
-    },
-    {
-      "name": "FRReverseProxyHandler",
-      "comment": "ReverseProxyHandler for calls to the FR services",
-      "type": "Chain",
-      "config": {
-        "filters": [
-          "TransactionIdOutboundFilter"
-        ],
-        "handler": "ReverseProxyHandler"
-      }
-    },
-    {
-      "name" : "AmService",
-      "type" : "AmService",
-      "config" : {
-        "url" : "https://&{identity.platform.fqdn}/am",
-        "realm" : "/&{am.realm}",
-        "agent" : {
-          "username" : "ig-agent",
-          "passwordSecretId" : "ig.agent.password"
-        },
-        "secretsProvider": "SystemAndEnvSecretStore-IAM",
-        "sessionCache" : {
-          "enabled" : false
-        },
-        "notifications" : {
-          "enabled" : false
-        }
-      }
-    },
-    {
       "name": "SystemAndEnvSecretStore-IAM",
       "type": "SystemAndEnvSecretStore",
       "config": {
         "format": "PLAIN"
-      }
-    },
-    {
-      "name": "SecretsProvider-AmJWK",
-      "type": "SecretsProvider",
-      "config": {
-        "stores": [
-          {
-            "type": "JwkSetSecretStore",
-            "config": {
-              "jwkUrl": "https://&{identity.platform.fqdn}/am/oauth2/realms/root/realms/&{am.realm}/connect/jwk_uri"
-            }
-          }
-        ]
       }
     },
     {
@@ -251,24 +138,6 @@
       }
     },
     {
-      "name": "SecretKeyPropertyFormat-Gateway",
-      "type": "SecretKeyPropertyFormat",
-      "config": {
-        "format": "PLAIN",
-        "algorithm": "AES"
-      }
-    },
-    {
-      "name": "SystemAndEnvSecretStore-Gateway",
-      "type": "SystemAndEnvSecretStore",
-      "config": {
-        "mappings": [{
-          "secretId": "ig.gw.secret",
-          "format": "SecretKeyPropertyFormat-Gateway"
-        }]
-      }
-    },
-    {
       "name": "TrustManager-OB",
       "type": "TrustManager",
       "config": {
@@ -306,78 +175,90 @@
       }
     },
     {
-      "name": "TrustedDirectoryService",
-      "type": "TrustedDirectoryService",
-      "config": {
-        "trustedDirectories": [
-          "OpenBankingTestDirectory",
-          "SecureAPIGatewayTestDirectory"
+      "name": "SBATFapiInteractionFilterChain",
+      "type": "ChainOfFilters",
+      "comment": "This filter chain will set the x-fapi-interaction-id (if not provided in the request), and also set the transaction context to the x-fapi-interaction-id value. This means that if the 'TransactionIdOutboundFilter' is specified on any handlers used by the chain the x-fapi-interaction-id value will be passed onward in the X-ForgeRock-TransactionId header",
+      "config" : {
+        "filters": [
+          {
+            "comment": "Add x-fapi-interaction-id header if one was not present in the request",
+            "name": "FapiInteractionIdFilter",
+            "type": "FapiInteractionIdFilter"
+          },
+          {
+            "name": "FapiInteractionIdTracingFilter",
+            "type": "FapiInteractionIdTracingFilter",
+            "comment": "Copy the x-fapi-interaction-id header to TransactionIdContext"
+          },
+          {
+            "comment": "Log any unhandled exceptions, installed after the FapiTransactionIdFilter so that the txId being logged is set to the x-fapi-interaction-id",
+            "name": "SapiLogAttachedExceptionFilter",
+            "type": "SapiLogAttachedExceptionFilter"
+          }
         ]
       }
     },
     {
-      "name": "OpenBankingTestDirectory",
-      "type": "TrustedDirectory",
-      "config": {
-        "issuer": "OpenBanking Ltd",
-        "softwareStatementClaims": {
-          "organisationIdClaimName": "org_id",
-          "organisationNameClaimName": "org_name",
-          "softwareIdClaimName": "software_id",
-          "clientNameClaimName": "software_client_name",
-          "redirectUrisClaimName": "software_redirect_uris",
-          "rolesClaimName": "software_roles",
-          "jwksUriClaimName": "software_jwks_endpoint"
-        },
-        "secretsProvider": {
-          "type": "SecretsProvider",
-          "config": {
-            "stores": [
-              {
-                "type": "JwkSetSecretStore",
-                "config": {
-                  "jwkUrl": "https://keystore.openbankingtest.org.uk/keystore/openbanking.jwks",
-                  "handler": "OBClientHandler"
-                }
-              }
-            ]
+      "name": "ValidateApiClientMtlsCertChain",
+      "type": "ChainOfFilters",
+      "comment": "This filter chain validates the ApiClient's MTLS cert using the Trusted Directory, it first fetches all of the resources it needs to perform the validation",
+      "config" : {
+        "filters": [
+          {
+            "comment": "Add ApiClient data to the context attributes.apiClient",
+            "name": "FetchApiClientFilter",
+            "type": "FetchApiClientFilter",
+            "config": {
+              "apiClientService": "IdmApiClientService"
+            }
+          },
+          {
+            "comment": "Validate the MTLS transport cert",
+            "name": "TransportCertValidationFilter",
+            "type": "TransportCertValidationFilter",
+            "config": {
+              "certificateRetriever": "HeaderCertificateRetriever",
+              "transportCertValidator": "TransportCertValidator"
+            }
           }
-        }
+        ]
       }
     },
     {
-      "name": "SecureAPIGatewayTestDirectory",
-      "type": "TrustedDirectory",
+      "name": "FRReverseProxyHandlerNoCapture",
+      "comment": "ReverseProxyHandler for calls to the FR services, with the capture decorator disabled",
+      "type": "Chain",
       "config": {
-        "issuer": "test-publisher",
-        "softwareStatementClaims": {
-          "organisationIdClaimName": "org_id",
-          "organisationNameClaimName": "org_name",
-          "softwareIdClaimName": "software_id",
-          "clientNameClaimName": "software_client_name",
-          "redirectUrisClaimName": "software_redirect_uris",
-          "rolesClaimName": "software_roles",
-          "jwksUriClaimName": "software_jwks_endpoint"
-        },
-        "secretsProvider": {
-          "type": "SecretsProvider",
-          "config": {
-            "stores": [
-              {
-                "type": "JwkSetSecretStore",
-                "config": {
-                  "jwkUrl": "https://&{trusteddir.fqdn}/jwkms/testdirectory/jwks",
-                  "handler": "OBClientHandler"
-                }
-              }
-            ]
-          }
-        }
+        "filters" : [
+          "TransactionIdOutboundFilter"
+        ],
+        "handler" : "ReverseProxyHandlerNoCapture"
       }
     },
     {
-      "name": "RsaJwtSignatureValidator",
-      "type": "RsaJwtSignatureValidator"
+      "name": "FRReverseProxyHandler",
+      "comment": "ReverseProxyHandler for calls to the FR services",
+      "type": "Chain",
+      "config": {
+        "filters": [
+          "TransactionIdOutboundFilter"
+        ],
+        "handler": "ReverseProxyHandler"
+      }
+    },
+    {
+      "name": "SecretsProvider-AmJWK",
+      "type": "SecretsProvider",
+      "config": {
+        "stores": [
+          {
+            "type": "JwkSetSecretStore",
+            "config": {
+              "jwkUrl": "https://&{identity.platform.fqdn}/am/oauth2/realms/root/realms/&{am.realm}/connect/jwk_uri"
+            }
+          }
+        ]
+      }
     },
     {
       "name": "TransportCertValidator",
@@ -394,10 +275,6 @@
       }
     },
     {
-      "name": "ContextCertificateRetriever",
-      "type": "ContextCertificateRetriever"
-    },
-    {
       "name": "IdmService",
       "type": "IdmService",
       "config": {
@@ -411,13 +288,6 @@
       "config": {
         "idmService": "IdmService",
         "jwkSetService": "JwkSetService"
-      }
-    },
-    {
-      "name": "IdmApiClientOrganisationService",
-      "type": "IdmApiClientOrganisationService",
-      "config": {
-        "idmService": "IdmService"
       }
     }
   ],
