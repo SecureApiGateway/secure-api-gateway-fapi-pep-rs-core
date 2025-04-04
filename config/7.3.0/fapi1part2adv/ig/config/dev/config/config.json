@@ -1,7 +1,8 @@
 {
   "properties": {
     "security": {
-      "tlsTransportCertSecretId": "tls.cert.secret.id",
+      "tlsTransportCertSecretId": "tls.cert.secret.id"
+    },
     "urls": {
       "idmBaseUri": "https://&{identity.platform.fqdn}/openidm"
     },
@@ -96,6 +97,30 @@
       "capture" : [ "response", "request" ]
     },
     {
+      "name": "SBATFapiInteractionFilterChain",
+      "type": "ChainOfFilters",
+      "comment": "This filter chain will set the x-fapi-interaction-id (if not provided in the request), and also set the transaction context to the x-fapi-interaction-id value. This means that if the 'TransactionIdOutboundFilter' is specified on any handlers used by the chain the x-fapi-interaction-id value will be passed onward in the X-ForgeRock-TransactionId header",
+      "config" : {
+        "filters": [
+          {
+            "comment": "Add x-fapi-interaction-id header if one was not present in the request",
+            "name": "FapiInteractionIdFilter",
+            "type": "FapiInteractionIdFilter"
+          },
+          {
+            "name": "FapiInteractionIdTracingFilter",
+            "type": "FapiInteractionIdTracingFilter",
+            "comment": "Copy the x-fapi-interaction-id header to TransactionIdContext"
+          },
+          {
+            "comment": "Log any unhandled exceptions, installed after the FapiTransactionIdFilter so that the txId being logged is set to the x-fapi-interaction-id",
+            "name": "SapiLogAttachedExceptionFilter",
+            "type": "SapiLogAttachedExceptionFilter"
+          }
+        ]
+      }
+    },
+    {
       "name": "SystemAndEnvSecretStore-IAM",
       "type": "SystemAndEnvSecretStore",
       "config": {
@@ -168,27 +193,13 @@
       }
     },
     {
-      "name": "SBATFapiInteractionFilterChain",
-      "type": "ChainOfFilters",
-      "comment": "This filter chain will set the x-fapi-interaction-id (if not provided in the request), and also set the transaction context to the x-fapi-interaction-id value. This means that if the 'TransactionIdOutboundFilter' is specified on any handlers used by the chain the x-fapi-interaction-id value will be passed onward in the X-ForgeRock-TransactionId header",
-      "config" : {
-        "filters": [
-          {
-            "comment": "Add x-fapi-interaction-id header if one was not present in the request",
-            "name": "FapiInteractionIdFilter",
-            "type": "FapiInteractionIdFilter"
-          },
-          {
-            "name": "FapiInteractionIdTracingFilter",
-            "type": "FapiInteractionIdTracingFilter",
-            "comment": "Copy the x-fapi-interaction-id header to TransactionIdContext"
-          },
-          {
-            "comment": "Log any unhandled exceptions, installed after the FapiTransactionIdFilter so that the txId being logged is set to the x-fapi-interaction-id",
-            "name": "SapiLogAttachedExceptionFilter",
-            "type": "SapiLogAttachedExceptionFilter"
-          }
-        ]
+      "name": "JwkSetService",
+      "type": "CachingJwkSetService",
+      "config": {
+        "endpointHandler": "OBClientHandler",
+        "cacheMaxSize": 500,
+        "cacheTimeout": "24 hours",
+        "tlsTransportCertSecretId": "&{security.tlsTransportCertSecretId}"
       }
     },
     {
@@ -218,28 +229,6 @@
       }
     },
     {
-      "name": "FRReverseProxyHandlerNoCapture",
-      "comment": "ReverseProxyHandler for calls to the FR services, with the capture decorator disabled",
-      "type": "Chain",
-      "config": {
-        "filters" : [
-          "TransactionIdOutboundFilter"
-        ],
-        "handler" : "ReverseProxyHandlerNoCapture"
-      }
-    },
-    {
-      "name": "FRReverseProxyHandler",
-      "comment": "ReverseProxyHandler for calls to the FR services",
-      "type": "Chain",
-      "config": {
-        "filters": [
-          "TransactionIdOutboundFilter"
-        ],
-        "handler": "ReverseProxyHandler"
-      }
-    },
-    {
       "name": "SecretsProvider-AmJWK",
       "type": "SecretsProvider",
       "config": {
@@ -257,7 +246,7 @@
       "name": "TransportCertValidator",
       "type": "DefaultTransportCertValidator",
       "config": {
-        "validKeyUse": "tls"
+        "transportCertSecretId": "&{security.tlsTransportCertSecretId}"
       }
     },
     {
