@@ -1,5 +1,7 @@
 {
   "properties": {
+    "security": {
+      "tlsTransportCertSecretId": "tls.cert.secret.id",
     "urls": {
       "idmBaseUri": "https://&{identity.platform.fqdn}/openidm"
     },
