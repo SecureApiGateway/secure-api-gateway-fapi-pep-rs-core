@@ -285,15 +285,6 @@
       }
     },
     {
-      "name": "JwkSetService",
-      "type": "CaffeineCachingJwkSetService",
-      "config": {
-        "handler": "OBClientHandler",
-        "maxCacheEntries": 500,
-        "expireAfterWriteDuration": "24 hours"
-      }
-    },
-    {
       "name": "TrustedDirectoryService",
       "type": "TrustedDirectoryService",
       "config": {
@@ -382,10 +373,6 @@
       }
     },
     {
-      "name": "ContextCertificateRetriever",
-      "type": "ContextCertificateRetriever"
-    },
-    {
       "name": "IdmService",
       "type": "IdmService",
       "config": {
@@ -399,13 +386,6 @@
       "config": {
         "idmService": "IdmService",
         "jwkSetService": "JwkSetService"
-      }
-    },
-    {
-      "name": "IdmApiClientOrganisationService",
-      "type": "IdmApiClientOrganisationService",
-      "config": {
-        "idmService": "IdmService"
       }
     }
   ],
