@@ -58,4 +58,4 @@ spec:
   tls:
     - hosts:
         - FQDN_PLACEHOLDER
-      secretName: fapi-pep-4s-tls-cert
+      secretName: fapi-pep-rs-tls-cert
