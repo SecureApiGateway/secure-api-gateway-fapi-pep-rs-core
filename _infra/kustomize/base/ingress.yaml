@@ -1,10 +1,13 @@
 ---
-# Ingress for access to routes protected with TLS by a ForgeRock cert
+# Ingress for routes requiring MTLS with Open Banking Directory issued certs
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+    nginx.ingress.kubernetes.io/auth-tls-secret: NAMESPACE_PLACEHOLDER/fapi-pep-rs-mtls-ca-certs
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: optional_no_ca
     nginx.ingress.kubernetes.io/large-client-header-buffers: "4 128k"
     nginx.ingress.kubernetes.io/proxy-body-size: 64m
     nginx.ingress.kubernetes.io/proxy-buffer-size: 128k
@@ -12,7 +15,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-buffers: 4 256k
     nginx.ingress.kubernetes.io/proxy-busy-buffers_size: 256k
     nginx.ingress.kubernetes.io/error-log-level: "debug"
-  name: rs-sapig
+  name: rs-mtls
 spec:
   ingressClassName: nginx
   rules:
@@ -29,7 +32,7 @@ spec:
   tls:
     - hosts:
         - FQDN_PLACEHOLDER
-      secretName: fapi-pep-rs-tls-cert
+      secretName: fapi-pep-rs-mtls-tls-cert
 ---
 # Ingress for dev only, provides access to the IG Studio UI
 apiVersion: networking.k8s.io/v1
