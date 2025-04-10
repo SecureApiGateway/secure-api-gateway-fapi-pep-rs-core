@@ -23,61 +23,15 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ .Chart.Name }}
+                name: fapi-pep-rs
                 port:
                   number: 80
-            path: /am/oauth2/realms/root/realms/{{ .Values.configmap.amRealm }}/access_token
-            pathType: Exact
-          - backend:
-              service:
-                name: {{ .Chart.Name }}
-                port:
-                  number: 80
-            path: /am/oauth2/realms/root/realms/{{ .Values.configmap.amRealm }}/register
-            pathType: Prefix
-          - backend:
-              service:
-                name: {{ .Chart.Name }}
-                port:
-                  number: 80
-            path: /am/oauth2/realms/root/realms/{{ .Values.configmap.amRealm }}/par
+            path: /rs/
             pathType: Prefix
   tls:
     - hosts:
         - {{ .Values.ingress.rsMtls.tls.host }}
       secretName: {{ .Values.ingress.rsMtls.tls.secretName }}
----
-# Ingress for access to routes protected with TLS by a ForgeRock cert
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/large-client-header-buffers: "4 128k"
-    nginx.ingress.kubernetes.io/proxy-body-size: "64m"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
-    nginx.ingress.kubernetes.io/proxy-buffering: "on"
-    nginx.ingress.kubernetes.io/proxy-buffers: "4 256k"
-    nginx.ingress.kubernetes.io/proxy-busy-buffers_size: "256k"
-    nginx.ingress.kubernetes.io/error-log-level: "debug"
-  name: rs-sapig
-spec:
-  ingressClassName: nginx
-  rules:
-    - host: {{ .Values.ingress.rsSapig.host }}
-      http:
-        paths:
-          - backend:
-              service:
-                name: {{ .Chart.Name }}
-                port:
-                  number: 80
-            path: /
-            pathType: Prefix
-  tls:
-    - hosts:
-        - {{ .Values.ingress.rsSapig.tls.host }}
-      secretName: {{ .Values.ingress.rsSapig.tls.secretName}}
 ---
 # Ingress for dev only, provides access to the IG Studio UI
 apiVersion: networking.k8s.io/v1
