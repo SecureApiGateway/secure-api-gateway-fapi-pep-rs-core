@@ -217,7 +217,7 @@
             }
           },
           {
-            "comment": "Add ApiClient data to the context attributes.apiClient",
+            "comment": "Add ApiClient data to the FAPI context",
             "name": "FetchApiClientFilter",
             "type": "FetchApiClientFilter",
             "config": {
