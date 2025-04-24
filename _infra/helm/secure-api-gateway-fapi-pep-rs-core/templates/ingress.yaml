@@ -49,7 +49,7 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ .Chart.Name }}
+                name: fapi-pep-rs
                 port:
                   number: 80
             path: /ig(/|$)(.*)

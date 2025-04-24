@@ -40,10 +40,9 @@ deployment:
   # See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/ for further info on Liveness and Readiness Probes
   # Config for the liveness probe
   livenessProbe:
-    initialDelaySeconds: 160
-    failureThreshold: 5
+    failureThreshold: 3
     path: "/kube/liveness"
-    periodSeconds: 5
+    periodSeconds: 30
     successThreshold: 1
     timeoutSeconds: 5
   # RS Connects to the mongodb instance
@@ -52,8 +51,9 @@ deployment:
     host: "mongodb"
   # Config for the readiness probe
   readinessProbe:
+    initialDelaySeconds: 5
     failureThreshold: 3
-    periodSeconds: 5
+    periodSeconds: 30
     path: "/kube/readiness"
     successThreshold: 1
     timeoutSeconds: 5
@@ -103,13 +103,7 @@ secrets:
   igIDMUser: "replace-me"
   igMetricsPassword: "replace-me"
   igMetricsUsername: "replace-me"
-  igOBASPSPSigningKeystoreKeypass: "replace-me"
-  igOBASPSPSigningKeystoreStorepass: "replace-me"
   igTruststorePassword: "replace-me"
-  mongodbConsentPassword: "replace-me"
-  mongodbConsentUsername: "replace-me"
-  mongodbTestFacilityPassword: "replace-me"
-  mongodbTestFacilityUsername: "replace-me"
 
 service:
   # Version of the Kubernetes API to use
