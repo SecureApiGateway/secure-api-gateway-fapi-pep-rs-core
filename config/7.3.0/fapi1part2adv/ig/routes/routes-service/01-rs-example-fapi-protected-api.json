@@ -10,7 +10,14 @@
           "name": "RouteMetricsFilter",
           "type": "RouteMetricsFilter"
         },
-        "SBATFapiInteractionFilterChain",
+        {
+          "comment": "FAPI Resource Filter Chain",
+          "name": "fapiResourceFilterChain",
+          "type": "FapiResourceFilterChain",
+          "config": {
+            "clientCertificate": "${pemCertificate(urlDecode(request.headers['ssl-client-cert'][0]))}"
+          }
+        },
         {
           "comment": "Extract client certificate thumbprint for cert bound access tokens",
           "name": "CertificateThumbprintFilter-1",
