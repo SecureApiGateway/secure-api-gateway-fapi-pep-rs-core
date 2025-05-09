@@ -191,10 +191,7 @@
           {
             "comment": "Validate the MTLS transport cert",
             "name": "TransportCertValidationFilter",
-            "type": "TransportCertValidationFilter",
-            "config": {
-              "transportCertValidator": "TransportCertValidator"
-            }
+            "type": "TransportCertValidationFilter"
           }
         ]
       }
@@ -211,13 +208,6 @@
             }
           }
         ]
-      }
-    },
-    {
-      "name": "TransportCertValidator",
-      "type": "DefaultTransportCertValidator",
-      "config": {
-        "transportCertSecretId": "&{security.tlsTransportCertSecretId}"
       }
     },
     {
