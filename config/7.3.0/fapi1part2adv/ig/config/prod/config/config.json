@@ -1,7 +1,6 @@
 {
   "properties": {
     "security": {
-      "tlsTransportCertSecretId": "tls.cert.secret.id"
     },
     "urls": {
       "idmBaseUri": "https://&{identity.platform.fqdn}/openidm"
@@ -162,8 +161,7 @@
       "config": {
         "endpointHandler": "OBClientHandler",
         "cacheMaxSize": 500,
-        "cacheTimeout": "24 hours",
-        "tlsTransportCertSecretId": "&{security.tlsTransportCertSecretId}"
+        "cacheTimeout": "24 hours"
       }
     },
     {
@@ -187,11 +185,6 @@
             "config": {
               "apiClientService": "IdmApiClientService"
             }
-          },
-          {
-            "comment": "Validate the MTLS transport cert",
-            "name": "TransportCertValidationFilter",
-            "type": "TransportCertValidationFilter"
           }
         ]
       }
