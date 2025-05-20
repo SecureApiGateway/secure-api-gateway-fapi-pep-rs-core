@@ -7,14 +7,11 @@
     "config": {
       "filters": [
         {
-          "name": "RouteMetricsFilter",
-          "type": "RouteMetricsFilter"
-        },
-        {
           "comment": "FAPI Resource Filter Chain",
           "name": "fapiResourceFilterChain",
           "type": "FapiResourceFilterChain",
           "config": {
+            "auditService" : "fapiAuditService",
             "clientCertificate": "${pemCertificate(urlDecode(request.headers['ssl-client-cert'][0]))}"
           }
         },
