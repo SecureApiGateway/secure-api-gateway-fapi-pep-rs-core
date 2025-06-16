@@ -57,7 +57,14 @@
             }
           }
         },
-        "ValidateApiClientMtlsCertChain",
+        {
+          "comment": "Add ApiClient data to the FAPI context",
+          "name": "FetchApiClientFilter",
+          "type": "FetchApiClientFilter",
+          "config": {
+            "apiClientService": "IdmApiClientService"
+          }
+        },
         {
           "comment": "Check grant type",
           "name": "Grant Type Verifier",
