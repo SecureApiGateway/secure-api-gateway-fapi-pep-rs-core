@@ -195,23 +195,6 @@
       }
     },
     {
-      "name": "ValidateApiClientMtlsCertChain",
-      "type": "ChainOfFilters",
-      "comment": "This filter chain validates the ApiClient's MTLS cert using the Trusted Directory, it first fetches all of the resources it needs to perform the validation",
-      "config" : {
-        "filters": [
-          {
-            "comment": "Add ApiClient data to the FAPI context",
-            "name": "FetchApiClientFilter",
-            "type": "FetchApiClientFilter",
-            "config": {
-              "apiClientService": "IdmApiClientService"
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "SecretsProvider-AmJWK",
       "type": "SecretsProvider",
       "config": {
