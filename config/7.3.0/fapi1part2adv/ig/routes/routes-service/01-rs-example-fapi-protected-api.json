@@ -12,56 +12,20 @@
           "type": "FapiResourceFilterChain",
           "config": {
             "auditService" : "fapiAuditService",
-            "clientCertificate": "${pemCertificate(urlDecode(request.headers['ssl-client-cert'][0]))}"
-          }
-        },
-        {
-          "comment": "Extract client certificate thumbprint for cert bound access tokens",
-          "name": "CertificateThumbprintFilter-1",
-          "type": "CertificateThumbprintFilter",
-          "config": {
-            "certificate": "${pemCertificate(urlDecode(request.headers['ssl-client-cert'][0]))}",
-            "failureHandler": {
-              "type": "ScriptableHandler",
-              "config": {
-                "type": "application/x-groovy",
-                "file": "ReturnInvalidCnfKeyError.groovy"
-              }
-            }
-          }
-        },
-        {
-          "comment": "Extracts the access_token from the request header. Uses the resolver to resolve the access_token and validate the token claims. Checks that the token has the scopes required by the filter configuration. Injects the access_token info into the OAuth2Context.",
-          "name": "OAuth2ResourceServerFilter",
-          "type": "OAuth2ResourceServerFilter",
-          "config": {
+            "clientCertificate": "${pemCertificate(urlDecode(request.headers['ssl-client-cert'][0]))}",
             "scopes": [
               "accounts"
             ],
-            "requireHttps": false,
             "realm": "OpenIG",
             "accessTokenResolver": {
-              "comment": "Check certificate-bound OAuth 2.0 bearer tokens presented by clients use the same mTLS-authenticated HTTP connection",
-              "type": "ConfirmationKeyVerifierAccessTokenResolver",
+              "name": "token-resolver",
+              "type": "StatelessAccessTokenResolver",
               "config": {
-                "delegate": {
-                  "name": "token-resolver-1",
-                  "type": "StatelessAccessTokenResolver",
-                  "config": {
-                    "secretsProvider": "SecretsProvider-AmJWK",
-                    "issuer": "https://&{as.fqdn}/am/oauth2/realms/root/realms/&{am.realm}",
-                    "verificationSecretId": "any.value.in.regex.format"
-                  }
-                }
+                "secretsProvider": "SecretsProvider-AmJWK",
+                "issuer": "https://&{as.fqdn}/am/oauth2/realms/root/realms/&{am.realm}",
+                "verificationSecretId": "any.value.in.regex.format"
               }
-            }
-          }
-        },
-        {
-          "comment": "Add ApiClient data to the FAPI context",
-          "name": "FetchApiClientFilter",
-          "type": "FetchApiClientFilter",
-          "config": {
+            },
             "apiClientService": "IdmApiClientService"
           }
         },
