@@ -28,18 +28,6 @@
             },
             "apiClientService": "IdmApiClientService"
           }
-        },
-        {
-          "comment": "Check grant type",
-          "name": "Grant Type Verifier",
-          "type": "ScriptableFilter",
-          "config": {
-            "type": "application/x-groovy",
-            "file": "GrantTypeVerifier.groovy",
-            "args": {
-              "allowedGrantType": "authorization_code"
-            }
-          }
         }
       ],
       "handler":     {
