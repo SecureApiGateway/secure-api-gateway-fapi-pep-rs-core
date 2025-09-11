@@ -6,4 +6,5 @@ Response response = new Response(Status.OK)
 var sub = contexts.oauth2.accessToken.info["sub"]
 response.entity.json = json(object(field("user", sub)))
 // some temp change
+
 return response
