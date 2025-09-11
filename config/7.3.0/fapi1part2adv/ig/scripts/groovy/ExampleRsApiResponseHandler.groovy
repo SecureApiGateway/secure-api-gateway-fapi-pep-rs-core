@@ -5,5 +5,5 @@ logger.debug(SCRIPT_NAME + "Creating example API response...")
 Response response = new Response(Status.OK)
 var sub = contexts.oauth2.accessToken.info["sub"]
 response.entity.json = json(object(field("user", sub)))
-
+// temp change to test git
 return response
