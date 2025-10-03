@@ -117,7 +117,6 @@
             "type": "ClientCredentialsOAuth2ClientFilter",
             "config": {
               "tokenEndpoint": "https://&{identity.platform.fqdn}/am/oauth2/realms/root/realms/&{am.realm}/access_token",
-              "secretsProvider": "SystemAndEnvSecretStore-IAM",
               "scopes": [
                 "fr:idm:*"
               ],
@@ -127,7 +126,7 @@
                   "handler": "ForgeRockClientHandler",
                   "filters": [
                     {
-                      "type": "ClientSecretBasicAuthenticationFilter",
+                      "type": "ClientSecretPostAuthenticationFilter",
                       "config": {
                         "clientId": "fapi-rs-ig-client",
                         "clientSecretId": "ig.rs.idm.client.secret",
