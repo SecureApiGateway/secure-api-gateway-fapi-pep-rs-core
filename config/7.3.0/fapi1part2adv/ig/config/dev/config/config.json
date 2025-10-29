@@ -159,10 +159,10 @@
     },
     {
       "name": "TrustManager-OB",
-      "type": "TrustManager",
+      "type": "SecretsTrustManager",
       "config": {
         "keystore": {
-          "type": "KeyStore",
+          "type": "KeyStoreSecretsStore",
           "config": {
             "url": "file://&{ig.instance.dir}&{ig.truststore.path}",
             "type": "PKCS12",

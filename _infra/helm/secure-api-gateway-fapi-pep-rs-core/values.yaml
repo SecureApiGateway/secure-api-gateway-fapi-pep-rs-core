@@ -43,7 +43,7 @@ deployment:
   livenessProbe:
     failureThreshold: 3
     initialDelaySeconds: 120
-    path: "/health/liveness"
+    path: "/health/live"
     periodSeconds: 30
     successThreshold: 1
     timeoutSeconds: 5
@@ -56,7 +56,7 @@ deployment:
     failureThreshold: 3
     initialDelaySeconds: 60
     periodSeconds: 30
-    path: "/health/readiness"
+    path: "/health/ready"
     successThreshold: 1
     timeoutSeconds: 5
   # How many pods are to run in the deployment
