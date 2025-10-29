@@ -20,10 +20,10 @@ ifndef dockerArgs
 endif
 	@if [ "${setlatest}" = "true" ]; then \
 		docker build secure-api-gateway-fapi-pep-rs-core-docker ${dockerArgs} -t ${repo}/securebanking/${service}:${TAG} -t ${repo}/securebanking/${service}:latest; \
-		docker push ${repo}/securebanking/${service} --all-tags; \
+		#docker push ${repo}/securebanking/${service} --all-tags; \
     else \
    		docker build secure-api-gateway-fapi-pep-rs-core-docker ${dockerArgs} -t ${repo}/securebanking/${service}:${TAG}; \
-   		docker push ${repo}/securebanking/${service}:${TAG}; \
+   		#docker push ${repo}/securebanking/${service}:${TAG}; \
    	fi;
 conf:
 ifndef env
