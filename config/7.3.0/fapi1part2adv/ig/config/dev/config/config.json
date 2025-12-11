@@ -12,7 +12,7 @@
       }
     }
   },
-  "handler": "_router",
+  "_handler": "_router",
   "heap": [
     {
       "name": "_router",
