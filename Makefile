@@ -1,6 +1,7 @@
 name := secure-api-gateway-fapi-pep-rs-core
 repo := europe-west4-docker.pkg.dev/sbat-gcr-develop/sapig-docker-artifact
 service := fapi-pep-rs-core
+latesttagversion := latest
 helm_repo := forgerock-helm/secure-api-gateway/${name}/
 
 docker: build-java copy-java-dependencies conf
@@ -19,7 +20,7 @@ ifndef dockerArgs
 	$(eval dockerArgs=)
 endif
 	@if [ "${setlatest}" = "true" ]; then \
-		docker build secure-api-gateway-fapi-pep-rs-core-docker ${dockerArgs} -t ${repo}/securebanking/${service}:${TAG} -t ${repo}/securebanking/${service}:latest; \
+		docker build secure-api-gateway-fapi-pep-rs-core-docker ${dockerArgs} -t ${repo}/securebanking/${service}:${TAG} -t ${repo}/securebanking/${service}:${latesttagversion}; \
 		docker push ${repo}/securebanking/${service} --all-tags; \
     else \
    		docker build secure-api-gateway-fapi-pep-rs-core-docker ${dockerArgs} -t ${repo}/securebanking/${service}:${TAG}; \
