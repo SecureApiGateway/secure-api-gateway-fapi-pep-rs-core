@@ -195,12 +195,8 @@ init_config()
     jq --arg mode "$(echo $_arg_ig_mode | tr '[:lower:]' '[:upper:]')" '.mode = $mode' "$DOCKER_ROOT/$1/config/"admin.json > "$DOCKER_ROOT/$1/config/"admin.json.tmp
     mv "$DOCKER_ROOT/$1/config/"admin.json.tmp "$DOCKER_ROOT/$1/config/"admin.json
     echo "IG mode $_arg_ig_mode"
-    if [ "$_arg_ig_mode" == "development" ]; then
-      init_routes_dev "$1"
-    else
-      echo "copy ${PROFILE_ROOT}/$1/routes to $DOCKER_ROOT/$1/config"
-      cp -r "${PROFILE_ROOT}/$1/routes" "$DOCKER_ROOT/$1/config"
-    fi
+    echo "copy ${PROFILE_ROOT}/$1/routes to $DOCKER_ROOT/$1/config"
+    cp -r "${PROFILE_ROOT}/$1/routes" "$DOCKER_ROOT/$1/config"
   fi
 }
 
