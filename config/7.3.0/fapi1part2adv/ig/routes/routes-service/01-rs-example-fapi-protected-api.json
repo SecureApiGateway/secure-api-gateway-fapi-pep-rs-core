@@ -16,6 +16,7 @@
               "accounts"
             ],
             "realm": "OpenIG",
+            "jwkSetService": "JwkSetService",
             "accessTokenResolver": {
               "name": "token-resolver",
               "type": "StatelessAccessTokenResolver",
