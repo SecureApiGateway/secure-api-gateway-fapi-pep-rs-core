@@ -11,12 +11,12 @@
           "name": "fapiResourceFilterChain",
           "type": "FapiResourceFilterChain",
           "config": {
-            "auditService" : "fapiAuditService",
             "clientCertificate": "${pemCertificate(urlDecode(request.headers['ssl-client-cert'][0]))}",
             "scopes": [
               "accounts"
             ],
             "realm": "OpenIG",
+            "jwkSetService": "JwkSetService",
             "accessTokenResolver": {
               "name": "token-resolver",
               "type": "StatelessAccessTokenResolver",
@@ -25,8 +25,7 @@
                 "issuer": "https://&{as.fqdn}/am/oauth2/realms/root/realms/&{am.realm}",
                 "verificationSecretId": "any.value.in.regex.format"
               }
-            },
-            "apiClientService": "IdmApiClientService"
+            }
           }
         }
       ],
