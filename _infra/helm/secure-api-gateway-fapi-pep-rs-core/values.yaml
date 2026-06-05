@@ -9,12 +9,9 @@ configmap:
   cloudType: "CDK"
   gatewayDataRepoURI: "http://ig:80"
   identityPlatformFQDN: "iam.dev-cdk-core.forgerock.financial"
-  igTestDirectoryEnabled: "true"
-  igTruststorePath: "/secrets/truststore/igtruststore"
   rsFQDN: "rs-sapig.dev-cdk-core.forgerock.financial"
   rsMtlsFQDN: "rs-mtls.sapig.dev-cdk-core.forgerock.financial"
   sapigType: "core"
-  testDirectoryFQDN: "test-trusted-directory.dev-cdk-core.forgerock.financial"
   userObject: "user"
   AIC:
     identityDefaultUserAuthenticationService: "PasswordGrant"
@@ -99,7 +96,6 @@ secrets:
   igIDMUser: "replace-me"
   igMetricsPassword: "replace-me"
   igMetricsUsername: "replace-me"
-  igTruststorePassword: "replace-me"
 
 service:
   # Version of the Kubernetes API to use
