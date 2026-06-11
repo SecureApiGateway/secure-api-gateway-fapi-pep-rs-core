@@ -29,7 +29,6 @@
     <packaging>pom</packaging>
     <properties>
         <legal.path.header>../legal/LICENSE-HEADER.txt</legal.path.header>
-        <target.env>prod</target.env>
         <!-- Docker properties -->
         <docker.image.name>fapi-pep-rs-core</docker.image.name>
         <docker.resources.directory>${project.build.directory}/generated-config</docker.resources.directory>
